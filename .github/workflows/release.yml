@@ -74,15 +74,16 @@ jobs:
           git push origin "HEAD:refs/heads/$branch"
 
       - name: Package portable ZIP and checksums
+        id: portable
         if: steps.nsis.outcome == 'success'
+        continue-on-error: true
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          $stage = 'release/portable/SkillTree'
-          New-Item -ItemType Directory -Force -Path $stage | Out-Null
-          Copy-Item 'release/win-unpacked/*' $stage -Recurse -Force
-          Copy-Item 'docs/启动说明.txt' "$stage/启动说明.txt" -Force
-          Compress-Archive -Path $stage -DestinationPath "release/SkillTree-$version-portable.zip" -Force
+          python scripts/make-portable-zip.py 'release/win-unpacked' "release/SkillTree-$version-portable.zip" 'docs/启动说明.txt' *>&1 | Tee-Object -FilePath zip-build.log
+          $code = $LASTEXITCODE
+          Get-Content zip-build.log | Write-Host
+          if ($code -ne 0) { exit $code }
 
           $setup = Get-FileHash "release/SkillTree-$version-Setup.exe" -Algorithm SHA256
           $zip = Get-FileHash "release/SkillTree-$version-portable.zip" -Algorithm SHA256
@@ -95,8 +96,24 @@ jobs:
 
           Get-ChildItem release | Format-Table Name,Length
 
+      - name: Upload portable ZIP log on failure
+        if: steps.portable.outcome == 'failure'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          $branch = "ci-zip-log-${{ github.run_id }}"
+          $file = "ci-zip-${{ github.run_id }}.txt"
+          if (-not (Test-Path zip-build.log)) { Set-Content zip-build.log 'no zip log captured' }
+          Copy-Item zip-build.log $file -Force
+          git checkout -B $branch
+          git add -f $file
+          git commit -m "CI portable ZIP log ${{ github.run_id }}"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          git push origin "HEAD:refs/heads/$branch"
+
       - name: Publish GitHub Release
-        if: steps.nsis.outcome == 'success'
+        if: steps.nsis.outcome == 'success' && steps.portable.outcome == 'success'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
