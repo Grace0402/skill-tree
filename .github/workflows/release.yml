@@ -47,12 +47,39 @@ jobs:
           Copy-Item 'build/launcher.exe' "$app/SkillTree.exe" -Force
           Get-ChildItem "$app/SkillTree*.exe" | Select-Object Name,Length
 
+      - name: Package portable ZIP
+        id: portable
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          python scripts/make-portable-zip.py 'release-build/win-unpacked' "release/SkillTree-$version-portable.zip" 'docs/启动说明.txt' *>&1 | Tee-Object -FilePath zip-build.log
+          $code = $LASTEXITCODE
+          Get-Content zip-build.log | Write-Host
+          exit $code
+
+      - name: Upload portable ZIP log on failure
+        if: steps.portable.outcome == 'failure'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          $branch = "ci-zip-log-${{ github.run_id }}"
+          $file = "ci-zip-${{ github.run_id }}.txt"
+          if (-not (Test-Path zip-build.log)) { Set-Content zip-build.log 'no zip log captured' }
+          Copy-Item zip-build.log $file -Force
+          git checkout -B $branch
+          git add -f $file
+          git commit -m "CI portable ZIP log ${{ github.run_id }}"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          git push origin "HEAD:refs/heads/$branch"
+
       - name: Build NSIS installer
         id: nsis
         continue-on-error: true
         shell: pwsh
         run: |
-          npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=release --publish never *>&1 | Tee-Object -FilePath nsis-build.log
+          npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=installer --publish never *>&1 | Tee-Object -FilePath nsis-build.log
           $code = $LASTEXITCODE
           Get-Content nsis-build.log | Write-Host
           exit $code
@@ -73,19 +100,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit 1 }
           git push origin "HEAD:refs/heads/$branch"
 
-      - name: Package portable ZIP and checksums
-        id: portable
-        if: steps.nsis.outcome == 'success'
-        continue-on-error: true
+      - name: Generate checksums
+        if: steps.portable.outcome == 'success' && steps.nsis.outcome == 'success'
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          python scripts/make-portable-zip.py 'release/win-unpacked' "release/SkillTree-$version-portable.zip" 'docs/启动说明.txt' *>&1 | Tee-Object -FilePath zip-build.log
-          $code = $LASTEXITCODE
-          Get-Content zip-build.log | Write-Host
-          if ($code -ne 0) { exit $code }
-
-          $setup = Get-FileHash "release/SkillTree-$version-Setup.exe" -Algorithm SHA256
+          $setup = Get-FileHash "installer/SkillTree-$version-Setup.exe" -Algorithm SHA256
           $zip = Get-FileHash "release/SkillTree-$version-portable.zip" -Algorithm SHA256
           @(
             "个人技能树 v$version",
@@ -93,27 +113,11 @@ jobs:
             "$($setup.Hash)  SkillTree-$version-Setup.exe",
             "$($zip.Hash)  SkillTree-$version-portable.zip"
           ) | Set-Content 'release/SHA256SUMS.txt' -Encoding utf8
-
           Get-ChildItem release | Format-Table Name,Length
-
-      - name: Upload portable ZIP log on failure
-        if: steps.portable.outcome == 'failure'
-        shell: pwsh
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          $branch = "ci-zip-log-${{ github.run_id }}"
-          $file = "ci-zip-${{ github.run_id }}.txt"
-          if (-not (Test-Path zip-build.log)) { Set-Content zip-build.log 'no zip log captured' }
-          Copy-Item zip-build.log $file -Force
-          git checkout -B $branch
-          git add -f $file
-          git commit -m "CI portable ZIP log ${{ github.run_id }}"
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          git push origin "HEAD:refs/heads/$branch"
+          Get-ChildItem installer | Format-Table Name,Length
 
       - name: Publish GitHub Release
-        if: steps.nsis.outcome == 'success' && steps.portable.outcome == 'success'
+        if: steps.portable.outcome == 'success' && steps.nsis.outcome == 'success'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -130,8 +134,9 @@ jobs:
 
             SHA256 校验值见 `SHA256SUMS.txt`。
           files: |
-            release/SkillTree-*-Setup.exe
+            installer/SkillTree-*-Setup.exe
             release/SkillTree-*-portable.zip
             release/SHA256SUMS.txt
+          overwrite_files: true
           fail_on_unmatched_files: true
           generate_release_notes: true
