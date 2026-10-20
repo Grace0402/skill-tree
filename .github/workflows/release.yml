@@ -64,10 +64,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           $branch = "ci-log-${{ github.run_id }}"
+          $file = "ci-nsis-${{ github.run_id }}.txt"
+          if (-not (Test-Path nsis-build.log)) { Set-Content nsis-build.log 'no nsis log captured' }
+          Copy-Item nsis-build.log $file -Force
           git checkout -B $branch
-          Copy-Item nsis-build.log "ci-nsis-${{ github.run_id }}.log" -Force
-          git add "ci-nsis-${{ github.run_id }}.log"
+          git add -f $file
           git commit -m "CI NSIS log ${{ github.run_id }}"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
           git push origin "HEAD:refs/heads/$branch"
 
       - name: Package portable ZIP and checksums
