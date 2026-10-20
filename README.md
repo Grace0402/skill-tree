@@ -8,6 +8,15 @@
 - **没有分数、没有总分、没有进度条**：只有连续的明暗，永远逼近 100，永远不到 100。
 - **数据就是文件夹**：整棵树是一个普通目录，`Markdown` 日记 + 少量 JSON，可直接用 Obsidian、文件管理器打开、编辑、备份、带走。
 
+## 下载（Windows 10 / 11 x64）
+
+- **GitHub Releases**：<https://github.com/Grace0402/skill-tree/releases/latest>
+- **一键安装版**：`SkillTree-1.0.0-Setup.exe`，按当前用户安装，不需要管理员，装完自动启动。
+- **免安装版**：`SkillTree-1.0.0-portable.zip`，完整解压后双击 `SkillTree\SkillTree.exe`。
+
+> 安装包未签名，SmartScreen 提示时选择「更多信息 → 仍要运行」。
+> 首次启动如果系统限制 Chromium 沙箱或 GPU，启动器会自动切兼容模式；如果「我的文档」不可写，数据会自动放到程序目录下的 `我的技能树`。
+
 ![深色主题 · 整体视图](docs/screenshots/dark-overview.png)
 
 ---
