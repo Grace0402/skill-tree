@@ -36,7 +36,7 @@ jobs:
         run: npm run build
 
       - name: Package app (unpacked)
-        run: npx electron-builder --win --dir --config.directories.output=release-build
+        run: npx electron-builder --win --dir --config.directories.output=release-build --publish never
 
       - name: Add safe launcher
         shell: pwsh
@@ -52,7 +52,7 @@ jobs:
         continue-on-error: true
         shell: pwsh
         run: |
-          npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=release *>&1 | Tee-Object -FilePath nsis-build.log
+          npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=release --publish never *>&1 | Tee-Object -FilePath nsis-build.log
           $code = $LASTEXITCODE
           Get-Content nsis-build.log | Write-Host
           exit $code
