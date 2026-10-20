@@ -153,6 +153,8 @@ npx electron-builder --win --x64 --prepackaged release-build\win-unpacked
 
 `build-launcher.ps1` 会把 `SkillTree.exe` 重命名为 `SkillTree-app.exe`，再编译启动器为 `SkillTree.exe`。生成的 `release/win-unpacked` 才是可发布目录。
 
+> CI（GitHub Actions）不安装 .NET Framework 编译器，因此直接使用仓库里的 `build/launcher.exe`；重新编译启动器只在本地需要时运行 `scripts/build-launcher.ps1`。
+
 免安装 ZIP 用任意压缩工具把 `release/win-unpacked` 打成 `SkillTree\` 目录（保留 `启动说明.txt`），压缩级别 5 左右即可。
 
 > 启动器源码在 `build/launcher.cs`，使用 .NET Framework 4.8 的 `csc.exe` 编译，无第三方依赖。
@@ -341,7 +343,8 @@ skill-tree/
 │   └── styles/main.css    # 主题令牌与全局样式
 ├── build/
 │   ├── icon.ico
-│   └── launcher.cs        # 启动器：正常启动失败时自动切 --no-sandbox
+│   ├── launcher.cs        # 启动器源码：正常启动失败时自动切 --no-sandbox --disable-gpu
+│   └── launcher.exe       # 已编译启动器（CI 直接使用，避免依赖 csc）
 ├── scripts/
 │   ├── dev.mjs            # Vite + Electron 开发启动器
 │   ├── test-core.mjs      # 66 项核心逻辑验收

@@ -39,7 +39,13 @@ jobs:
         run: npx electron-builder --win --dir --config.directories.output=release-build
 
       - name: Add safe launcher
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-launcher.ps1 -AppDir release-build/win-unpacked
+        shell: pwsh
+        run: |
+          $app = 'release-build/win-unpacked'
+          if (Test-Path "$app/SkillTree-app.exe") { Remove-Item "$app/SkillTree-app.exe" -Force }
+          Move-Item "$app/SkillTree.exe" "$app/SkillTree-app.exe" -Force
+          Copy-Item 'build/launcher.exe' "$app/SkillTree.exe" -Force
+          Get-ChildItem "$app/SkillTree*.exe" | Select-Object Name,Length
 
       - name: Build NSIS installer
         run: npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=release
