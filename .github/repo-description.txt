@@ -1,0 +1,1 @@
+本地优先的技能成长树：用文件夹与 Markdown 日记记录每一次投入，光沿枝干汇聚到中心的水晶球。没有分数、没有总分、永远不到 100；数据可用 Obsidian 直接打开。Electron + Vue 3 + TypeScript。

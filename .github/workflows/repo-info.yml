@@ -1,0 +1,31 @@
+name: Update repository info
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/repo-description.txt
+      - .github/workflows/repo-info.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update repository description and topics
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PATCH "repos/${{ github.repository }}" \
+            -f description="$(cat .github/repo-description.txt)" \
+            -f homepage="https://github.com/${{ github.repository }}/releases/latest"
+          gh api -X PUT "repos/${{ github.repository }}/topics" --input - <<'EOF'
+          {"names":["electron","vue","typescript","vite","desktop-app","markdown","local-first","productivity","skill-tree"]}
+          EOF
