@@ -48,9 +48,30 @@ jobs:
           Get-ChildItem "$app/SkillTree*.exe" | Select-Object Name,Length
 
       - name: Build NSIS installer
-        run: npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=release
+        id: nsis
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=release *>&1 | Tee-Object -FilePath nsis-build.log
+          $code = $LASTEXITCODE
+          Get-Content nsis-build.log | Write-Host
+          exit $code
+
+      - name: Upload NSIS log on failure
+        if: steps.nsis.outcome == 'failure'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          $branch = "ci-log-${{ github.run_id }}"
+          git checkout -B $branch
+          Copy-Item nsis-build.log "ci-nsis-${{ github.run_id }}.log" -Force
+          git add "ci-nsis-${{ github.run_id }}.log"
+          git commit -m "CI NSIS log ${{ github.run_id }}"
+          git push origin "HEAD:refs/heads/$branch"
 
       - name: Package portable ZIP and checksums
+        if: steps.nsis.outcome == 'success'
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
@@ -72,6 +93,7 @@ jobs:
           Get-ChildItem release | Format-Table Name,Length
 
       - name: Publish GitHub Release
+        if: steps.nsis.outcome == 'success'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
