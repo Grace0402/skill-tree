@@ -1,0 +1,89 @@
+name: Build and Release Windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      ELECTRON_MIRROR: 'https://github.com/electron/electron/releases/download/'
+      ELECTRON_BUILDER_BINARIES_MIRROR: 'https://github.com/electron-userland/electron-builder-binaries/releases/download/'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Use upstream Electron mirror in CI
+        run: npm config delete electron_mirror --location=project
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and build
+        run: npm run build
+
+      - name: Package app (unpacked)
+        run: npx electron-builder --win --dir --config.directories.output=release-build
+
+      - name: Add safe launcher
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-launcher.ps1 -AppDir release-build/win-unpacked
+
+      - name: Build NSIS installer
+        run: npx electron-builder --win --x64 --prepackaged release-build/win-unpacked --config.directories.output=release
+
+      - name: Package portable ZIP and checksums
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $stage = 'release/portable/SkillTree'
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item 'release/win-unpacked/*' $stage -Recurse -Force
+          Copy-Item 'docs/启动说明.txt' "$stage/启动说明.txt" -Force
+          Compress-Archive -Path $stage -DestinationPath "release/SkillTree-$version-portable.zip" -Force
+
+          $setup = Get-FileHash "release/SkillTree-$version-Setup.exe" -Algorithm SHA256
+          $zip = Get-FileHash "release/SkillTree-$version-portable.zip" -Algorithm SHA256
+          @(
+            "个人技能树 v$version",
+            "",
+            "$($setup.Hash)  SkillTree-$version-Setup.exe",
+            "$($zip.Hash)  SkillTree-$version-portable.zip"
+          ) | Set-Content 'release/SHA256SUMS.txt' -Encoding utf8
+
+          Get-ChildItem release | Format-Table Name,Length
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 个人技能树 ${{ github.ref_name }}
+          body: |
+            Windows 10 / 11（x64）
+
+            - **SkillTree-1.0.0-Setup.exe**：一键安装版，按当前用户安装，不需要管理员权限，装完自动启动。
+            - **SkillTree-1.0.0-portable.zip**：免安装版，完整解压后双击 `SkillTree\SkillTree.exe`。
+
+            首次启动如果系统限制 Chromium 沙箱或 GPU，启动器会自动切兼容模式；
+            如果“我的文档”不可写，数据会自动放到程序目录下的 `我的技能树`。
+            安装包未签名，SmartScreen 提示时选择“更多信息 → 仍要运行”。
+
+            SHA256 校验值见 `SHA256SUMS.txt`。
+          files: |
+            release/SkillTree-*-Setup.exe
+            release/SkillTree-*-portable.zip
+            release/SHA256SUMS.txt
+          fail_on_unmatched_files: true
+          generate_release_notes: true
