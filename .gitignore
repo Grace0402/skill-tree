@@ -1,0 +1,33 @@
+node_modules/
+dist/
+dist-electron/
+release-build/
+release-fix/
+release-fix2/
+release-app/
+release/
+.npm-cache/
+.npm-cache-2/
+.electron-cache/
+.electron-cache-2/
+.electron-builder-cache/
+.test-data/
+.test-*/
+.tmp/
+.dev-profile/
+.dev-userdata/
+.skilltree-userdata/
+.zip-test/
+.launcher-test/
+/screenshots/
+*.log
+.DS_Store
+Thumbs.db
+
+# 若把用户数据目录放进项目里
+my-skill-tree/
+config.json
+
+# 开发探测时的临时数据
+.gpu-test-data/
+.probe-*/

@@ -1,0 +1,42 @@
+appId: com.growth.skilltree
+productName: 个人技能树
+copyright: Copyright © 2026
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - build/icon.png
+  - package.json
+asar: true
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+  executableName: SkillTree
+  artifactName: SkillTree-${version}-Setup.${ext}
+nsis:
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 个人技能树
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+mac:
+  target:
+    - dmg
+  icon: build/icon.png
+  category: public.app-category.productivity
+  artifactName: SkillTree-${version}.${ext}
+linux:
+  target:
+    - AppImage
+  icon: build/icon.png
+  category: Utility
+  artifactName: SkillTree-${version}.${ext}

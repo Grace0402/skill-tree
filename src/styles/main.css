@@ -1,0 +1,537 @@
+/* ============================================================
+   个人技能树 · 全局样式与主题令牌
+   深色：从暗里亮起来的光晕 / 浅色：暖黄实心色阶
+   ============================================================ */
+
+:root {
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei",
+    "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --font-display: "Palatino Linotype", "Book Antiqua", "Songti SC", "STSong", "SimSun", Georgia,
+    serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", "Consolas", monospace;
+  --titlebar-h: 46px;
+  --radius-lg: 16px;
+  --radius: 11px;
+  --radius-sm: 8px;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07090f;
+  --bg-2: #0a0d17;
+  --panel: rgba(13, 17, 27, 0.74);
+  --panel-strong: rgba(17, 22, 35, 0.96);
+  --glass: rgba(255, 255, 255, 0.035);
+  --glass-strong: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.04);
+  --input-focus: rgba(255, 255, 255, 0.055);
+  --text: #eceef7;
+  --text-2: #a4abc0;
+  --text-3: #6b7288;
+  --line: rgba(255, 255, 255, 0.075);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --gold: #f2c67c;
+  --gold-strong: #ffdda4;
+  --gold-soft: rgba(242, 198, 124, 0.13);
+  --glow: 255, 196, 104;
+  --danger: #e5857d;
+  --danger-soft: rgba(229, 133, 125, 0.12);
+  --shadow: 0 28px 80px rgba(0, 0, 0, 0.6);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --scrim: rgba(3, 5, 10, 0.62);
+  --star-opacity: 0.55;
+  --canvas-tint: rgba(242, 198, 124, 0.05);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f3e9;
+  --bg-2: #ede5d4;
+  --panel: rgba(255, 253, 248, 0.72);
+  --panel-strong: rgba(255, 253, 248, 0.97);
+  --glass: rgba(255, 255, 255, 0.42);
+  --glass-strong: rgba(255, 255, 255, 0.68);
+  --input: rgba(255, 255, 255, 0.58);
+  --input-focus: rgba(255, 255, 255, 0.9);
+  --text: #2b241b;
+  --text-2: #695e4f;
+  --text-3: #9a8e7c;
+  --line: rgba(74, 58, 32, 0.12);
+  --line-strong: rgba(74, 58, 32, 0.22);
+  --gold: #ac7014;
+  --gold-strong: #855509;
+  --gold-soft: rgba(172, 112, 20, 0.1);
+  --glow: 190, 130, 30;
+  --danger: #b0503f;
+  --danger-soft: rgba(176, 80, 63, 0.1);
+  --shadow: 0 26px 70px rgba(95, 75, 45, 0.2);
+  --shadow-soft: 0 8px 24px rgba(95, 75, 45, 0.12);
+  --scrim: rgba(80, 68, 48, 0.32);
+  --star-opacity: 0.16;
+  --canvas-tint: rgba(172, 112, 20, 0.075);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable] {
+  user-select: text;
+}
+
+::selection {
+  background: rgba(242, 198, 124, 0.28);
+  color: var(--text);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--gold);
+}
+
+/* ---------- 滚动条 ---------- */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* ---------- 应用骨架 ---------- */
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 640px at 78% -10%, var(--canvas-tint), transparent 62%),
+    radial-gradient(900px 620px at -8% 108%, var(--canvas-tint), transparent 60%),
+    var(--bg);
+}
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  position: relative;
+}
+
+/* ---------- 按钮 ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 9px;
+  border: 1px solid var(--line-strong);
+  background: var(--glass);
+  color: var(--text);
+  font-size: 12.5px;
+  white-space: nowrap;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease),
+    transform 0.16s var(--ease);
+}
+
+.btn:hover {
+  background: var(--glass-strong);
+  border-color: var(--line-strong);
+}
+
+.btn:active {
+  transform: translateY(0.5px);
+}
+
+.btn.primary {
+  border-color: transparent;
+  background: linear-gradient(180deg, #ffe3ae, #eeb964);
+  color: #241706;
+  font-weight: 600;
+  box-shadow:
+    0 6px 18px rgba(226, 167, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.btn.primary:hover {
+  filter: brightness(1.045);
+  background: linear-gradient(180deg, #ffe3ae, #eeb964);
+}
+
+.btn.ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-2);
+}
+
+.btn.ghost:hover {
+  background: var(--glass);
+  color: var(--text);
+}
+
+.btn.danger {
+  border-color: transparent;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn.danger:hover {
+  background: rgba(229, 133, 125, 0.2);
+}
+
+.btn.small {
+  height: 27px;
+  padding: 0 10px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.btn.lg {
+  height: 38px;
+  padding: 0 18px;
+  font-size: 13.5px;
+  border-radius: 10px;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--text-2);
+  transition:
+    background 0.15s var(--ease),
+    color 0.15s var(--ease);
+}
+
+.icon-btn:hover {
+  background: var(--glass-strong);
+  color: var(--text);
+}
+
+.icon-btn:disabled:hover {
+  background: transparent;
+}
+
+/* ---------- 表单 ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  color: var(--text-2);
+}
+
+.field-hint {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  background: var(--input);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--text);
+  padding: 9px 11px;
+  font: inherit;
+  line-height: 1.6;
+  outline: none;
+  transition:
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-3);
+}
+
+.input:hover,
+.textarea:hover {
+  border-color: var(--line-strong);
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: rgba(var(--glow), 0.55);
+  background: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 78px;
+}
+
+.input.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--gold) 0%,
+    var(--gold) var(--fill, 50%),
+    var(--line-strong) var(--fill, 50%),
+    var(--line-strong) 100%
+  );
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--gold-strong);
+  border: 2px solid var(--bg);
+  box-shadow:
+    0 0 0 1px rgba(var(--glow), 0.5),
+    0 3px 8px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s var(--ease);
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--gold);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+/* ---------- 通用小件 ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.badge.gold {
+  color: var(--gold);
+  background: var(--gold-soft);
+  border-color: transparent;
+}
+
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--line-strong);
+  color: var(--text-3);
+  background: var(--glass);
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+.faint {
+  color: var(--text-3);
+}
+
+.serif {
+  font-family: var(--font-display);
+}
+
+/* ---------- 过渡动画 ---------- */
+
+.pop-enter-active,
+.pop-leave-active {
+  transition: opacity 0.2s var(--ease);
+}
+
+.pop-enter-active .sheet,
+.pop-leave-active .sheet {
+  transition: transform 0.24s var(--ease-out), opacity 0.2s var(--ease);
+}
+
+.pop-enter-from,
+.pop-leave-to {
+  opacity: 0;
+}
+
+.pop-enter-from .sheet,
+.pop-leave-to .sheet {
+  transform: translateY(10px) scale(0.985);
+  opacity: 0;
+}
+
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: transform 0.26s var(--ease-out), opacity 0.2s var(--ease);
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(18px);
+  opacity: 0;
+}
+
+@keyframes gentle-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

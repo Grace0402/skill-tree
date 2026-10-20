@@ -1,0 +1,34 @@
+{
+  "name": "personal-skill-tree",
+  "productName": "个人技能树",
+  "version": "1.0.0",
+  "description": "成长足迹树：记录你点亮了什么、长出了什么。",
+  "main": "dist-electron/electron/main.js",
+  "author": "Skill Tree",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "npm run build:electron && node scripts/dev.mjs",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "build:renderer": "vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "build": "npm run typecheck && npm run build:renderer && npm run build:electron",
+    "start": "electron .",
+    "test": "npm run build:electron && node scripts/test-core.mjs",
+    "seed": "node scripts/seed-demo.mjs",
+    "shot": "node scripts/screenshot.mjs",
+    "icon": "python scripts/make-icon.py",
+    "dist": "npm run build && electron-builder --win --x64",
+    "dist:dir": "npm run build && electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "electron": "44.7.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.7",
+    "vue": "^3.5.44",
+    "vue-tsc": "^3.1.8"
+  }
+}
